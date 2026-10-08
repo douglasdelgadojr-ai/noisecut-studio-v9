@@ -1,0 +1,80 @@
+name: Construir NoiseCut Studio para Windows
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: utf-8
+  QT_QPA_PLATFORM: offscreen
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        edition: [Lite, Completa]
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Instalar Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Descargar FFmpeg estable 8.1 (BtbN, GPL; no usar master, falla con anlmdn)
+        shell: pwsh
+        run: |
+          $url = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n8.1-latest-win64-gpl-8.1.zip"
+          Invoke-WebRequest -Uri $url -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip -DestinationPath ffmpeg_tmp
+          $exe = Get-ChildItem ffmpeg_tmp -Recurse -Filter ffmpeg.exe | Select-Object -First 1
+          $bin = $exe.DirectoryName
+          if (-not (Test-Path (Join-Path $bin "ffprobe.exe"))) { throw "Falta ffprobe.exe en la descarga de FFmpeg" }
+          "FFMPEG_BIN=$bin" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $bin | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          Write-Host "FFmpeg listo en $bin"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Generar iconos
+        run: python make_icon.py
+
+      - name: Ejecutar pruebas (si fallan, igual se compila para poder probar el .exe)
+        id: tests
+        continue-on-error: true
+        run: python test_engine.py
+
+      - name: Compilar (build_windows.ps1 instala la IA y copia FFmpeg en la edicion Completa)
+        shell: pwsh
+        run: ./build_windows.ps1 -Edition ${{ matrix.edition }}
+
+      - name: Comprimir
+        shell: pwsh
+        run: |
+          $name = "NoiseCutStudio-${{ matrix.edition }}"
+          Compress-Archive -Path "dist/$name" -DestinationPath "$name.zip"
+          $mb = [math]::Round((Get-Item "$name.zip").Length / 1MB, 1)
+          Write-Host "Tamano de ${name}: $mb MB"
+          if ($mb -gt 700) { Write-Host "AVISO: supera 700 MB; usa la edicion Lite como principal." }
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: NoiseCutStudio-${{ matrix.edition }}
+          path: NoiseCutStudio-${{ matrix.edition }}.zip
+
+      - name: Marcar el job en rojo si fallaron las pruebas
+        if: steps.tests.outcome == 'failure'
+        shell: pwsh
+        run: |
+          Write-Host "Las pruebas fallaron; el .exe se subio igualmente. Revisa el paso Ejecutar pruebas."
+          exit 1

@@ -1,0 +1,34 @@
+VERIFICACION FINAL - NoiseCut Studio
+
+PROBADO (ejecutado en Linux, Python 3.12, con FFmpeg 6.1.1 y con BtbN n8.1, la misma version que usa el workflow):
+- python test_engine.py termina completo y en OK, incluyendo: limpieza de voz sintetica, exportes MOV, MKV, WebM, GIF, MP3, WAV y MP4 H.265 leidos con ffprobe, musica de 40 s limitada a video de 10 s, ducking, fundidos, fader -6 dB y pico final.
+- La ventana principal arranca en modo sin pantalla (QT_QPA_PLATFORM=offscreen) con PySide6 6.11.
+- build.yml es YAML valido.
+
+CORREGIDO EN ESTA REVISION (v5, segunda ronda tras el primer fallo en GitHub) (errores reales encontrados al ejecutar):
+- test_engine.py: aevalsrc con comas sin proteger y sine con opcion "a" inexistente; ahora la voz, el zumbido y los tonos se generan en Python (WAV).
+- Exportar GIF fallaba (mezclaba -vf con -filter_complex).
+- GIF, PNG y JPG dejaban la salida de audio sin conectar.
+- Exportar solo audio (MP3, WAV, AAC, FLAC) desde una linea de tiempo con video fallaba (etiqueta de filtro usada dos veces) y con 2 o mas pistas apuntaba a una entrada inexistente.
+- Bajar la musica con la voz (ducking) en exportacion de video fallaba (etiqueta [ac] usada dos veces); ahora se reparte con asplit.
+- build_windows.ps1: el marcador de edicion quedaba dentro de una carpeta y la app siempre se veia como "Source"; ahora se copia como edition.txt.
+- build.yml: usaba la ruta dist/NoiseCutStudio, que no existe; ahora usa dist/NoiseCutStudio-Lite y -Completa, y FFmpeg de BtbN se descarga antes de las pruebas y se copia con build_windows.ps1.
+- FFmpeg 'master' de BtbN se cierra con error de memoria al usar el filtro anlmdn (falla con cualquier parametro); el workflow ahora fija la version estable n8.1.
+- El ancho 853 (16:9 a 480p) es impar y libx264 lo rechazaba: ahora las medidas siempre son pares.
+- MOV, MKV, HEVC, WebM y AVI ahora fuerzan yuv420p (ya lo hacia MP4).
+- Se anadieron pruebas de regresion para todo lo anterior.
+
+LIMITES DE LA LIMPIEZA DE VOZ (importante):
+- El test mide la mejora en las pausas entre sonidos (21 dB aprox.). Medido en un experimento aparte, el ruido de alta frecuencia DURANTE la voz solo mejoro unos 7,5 dB frente a la voz. La compuerta explica la diferencia. El numero del test no equivale a "suena 20 dB mejor".
+- Todo esto es voz sintetica, no voz humana. Falta escuchar con un video real y ajustar.
+
+NO PROBADO:
+- Compilacion del .exe con PyInstaller y GitHub Actions (build.yml y build_windows.ps1 no se ejecutaron).
+- Interfaz interactiva (edicion, reproduccion, vista previa, recuperacion tras cierre, abrir y guardar proyectos reales).
+- Funciones de IA (Whisper, quitar fondo), RNNoise, DeepFilterNet y aceleracion por GPU.
+- Que FFmpeg de BtbN en Windows se comporte igual que el de Linux de estas pruebas (mismo n8.1, otro sistema). Si BtbN publica una version nueva, el archivo n8.1 puede desaparecer: habria que cambiar el nombre en build.yml.
+- Tamano final de la edicion Completa (limite ~700 MB).
+
+NOTAS DE LICENCIA PENDIENTES:
+- RNNoise: no se incluye modelo (el prompt pedia incluirlo); el metodo IA exige un archivo local.
+- Iconos SVG de make_icon.py: si sus trazados provienen de Lucide, hay que anadir su licencia ISC a THIRD_PARTY_NOTICES.txt. No lo pude confirmar.

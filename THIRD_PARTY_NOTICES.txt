@@ -1,0 +1,53 @@
+AVISOS DE COMPONENTES DE TERCEROS
+
+FFmpeg
+El empaquetado de Windows descarga y copia la compilacion GPL de BtbN/FFmpeg-Builds.
+El ZIP de la aplicacion conserva los archivos de licencia y avisos que vienen en su
+carpeta bin. Consulta esos documentos antes de redistribuir la aplicacion. El workflow
+actualiza la descarga desde el lanzamiento publicado por BtbN.
+Proyecto: https://github.com/BtbN/FFmpeg-Builds
+Codigo fuente de FFmpeg (necesario para cumplir la GPL): https://ffmpeg.org/download.html
+y https://git.ffmpeg.org/ffmpeg.git (version estable 8.1, la rama que usa el workflow).
+La compilacion GPL de BtbN incluye bibliotecas GPL (por ejemplo x264 y x265); FFmpeg se
+ejecuta como programa aparte (ffmpeg.exe y ffprobe.exe en la carpeta ffmpeg\).
+Licencias y condiciones de FFmpeg: https://ffmpeg.org/legal.html
+
+PySide6 / Qt
+La interfaz usa PySide6. Consulta los avisos y licencias aplicables de Qt/PySide6:
+https://doc.qt.io/qtforpython-6/licenses.html
+
+Complementos de IA
+La edicion Completa incluye faster-whisper, CTranslate2, rembg y ONNX Runtime (todos
+con licencia MIT) y sus dependencias de PyPI (numpy, scipy, numba, opencv, etc.), cada una
+con su propia licencia. Los modelos se descargan al usar las funciones y no se guardan en
+este proyecto: Whisper (OpenAI, licencia MIT) y U2-Net/U2-NetP (licencia Apache 2.0).
+Conserva las licencias de estos componentes al redistribuir el paquete.
+
+Iconos
+El icono de la aplicacion (onda de sonido con corte diagonal) se dibuja con make_icon.py.
+Los iconos SVG de la interfaz tambien se generan desde make_icon.py, pero su geometria y
+estilo (cuadricula de 24 px, trazo redondeado, sin relleno) siguen las convenciones de
+Lucide / Feather y algunos trazados se parecen a iconos de Lucide. No se ha podido
+confirmar su origen exacto, asi que por precaucion se incluye el aviso de Lucide:
+
+Lucide - https://lucide.dev - https://github.com/lucide-icons/lucide/blob/main/LICENSE
+ISC License
+Copyright (c) for portions of Lucide are held by Cole Bemis as part of Feather (MIT).
+All other copyright (c) for Lucide are held by Lucide Contributors.
+Permission to use, copy, modify, and/or distribute this software for any purpose with
+or without fee is hereby granted, provided that the above copyright notice and this
+permission notice appear in all copies.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO
+THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO
+EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+(Texto de referencia; el archivo LICENSE del proyecto Lucide es el texto oficial.)
+
+RNNoise
+No se incluye ni descarga un modelo RNNoise preentrenado (el filtro arnndn de FFmpeg solo
+se usa si el usuario elige un archivo .rnnn local; no se empaqueta ninguno). El usuario puede seleccionar
+un archivo local compatible. La licencia de las ponderaciones publicadas no esta
+aclarada por el repositorio consultado; revisa el estado antes de redistribuir:
+https://github.com/xiph/rnnoise/issues/284
